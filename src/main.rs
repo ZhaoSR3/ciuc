@@ -17,8 +17,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut model = Model::new();
 
-    let image;
-
     if args_len == 1 {
         eprintln!(
             "Please specify the image path, or provide both the image path and the path of the JSON file for the animation.\n\nYou can get help by entering the \"--help\" command."
@@ -30,12 +28,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
 
-        image = load_rgba_image(&args[1])?;
-        model.sprite_frame = Some(SpriteFrame::new(&image));
+        let image = load_rgba_image(&args[1])?;
+        model.sprite_frame = Some(SpriteFrame::new(image));
     } else if args_len == 3 {
-        image = load_rgba_image(&args[1])?;
+        let image = load_rgba_image(&args[1])?;
         let json = load_json(&args[2])?;
-        model.sprite_frames = Some(SpriteFrames::new(&json));
+        model.sprite_frames = Some(SpriteFrames::new(&image, &json));
     } else {
         eprintln!("{HELP}");
         return Ok(());
@@ -46,7 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let result = (|| -> Result<(), Box<dyn std::error::Error>> {
         while model.running_state != RunningState::Done {
-            terminal.draw(|f| view(&mut model, f, &image))?;
+            terminal.draw(|f| view(&mut model, f))?;
 
             let mut current_msg = handle_event()?;
             while let Some(msg) = current_msg {

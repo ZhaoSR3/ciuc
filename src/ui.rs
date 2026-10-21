@@ -8,7 +8,7 @@ use ratatui::{
 };
 
 use crate::{
-    image::{crop_image, get_pixel, resize_image},
+    image::{get_pixel, resize_image},
     models::{CellPixel, MaintainOrFill, Model},
 };
 
@@ -99,7 +99,17 @@ fn fit_size(
     (new_width, new_height)
 }
 
-fn render(model: &mut Model, frame: &mut Frame, image: &RgbaImage) {
+fn render(model: &mut Model, frame: &mut Frame) {
+    let image = match &model.sprite_frame {
+        Some(sf) => &sf.image,
+        None => match &mut model.sprite_frames {
+            Some(sfs) => &sfs.update().image,
+            None => {
+                panic!("Not a single sprite frame.")
+            }
+        },
+    };
+
     let frame_area = frame.area();
     let image_width = image.width();
     let image_height = image.height();
@@ -123,15 +133,7 @@ fn render(model: &mut Model, frame: &mut Frame, image: &RgbaImage) {
         ),
     };
 
-    let reimage = match &model.sprite_frame {
-        Some(_) => resize_image(image, width, height),
-        None => match &mut model.sprite_frames {
-            Some(sfs) => resize_image(&crop_image(image, sfs.update()), width, height),
-            None => {
-                panic!("Not a single sprite frame.")
-            }
-        },
-    };
+    let reimage = resize_image(image, width, height);
 
     let reimage_width = reimage.width();
     let reimage_height = reimage.height();
@@ -161,6 +163,6 @@ fn render(model: &mut Model, frame: &mut Frame, image: &RgbaImage) {
     frame.render_widget(canvas, canvas_area);
 }
 
-pub fn view(model: &mut Model, frame: &mut Frame, image: &RgbaImage) {
-    render(model, frame, image);
+pub fn view(model: &mut Model, frame: &mut Frame) {
+    render(model, frame);
 }

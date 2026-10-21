@@ -7,6 +7,8 @@ use image::RgbaImage;
 use ratatui::style::Color;
 use serde::Deserialize;
 
+use crate::image::crop_image;
+
 #[derive(Deserialize)]
 struct AsepriteData {
     pub frames: HashMap<String, FrameData>,
@@ -57,10 +59,7 @@ struct FrameTag {
 }
 
 pub struct SpriteFrame {
-    pub x: u32,
-    pub y: u32,
-    pub width: u32,
-    pub height: u32,
+    pub image: RgbaImage,
     // pub pixels: Vec<Option<Rgba<u8>>>,
     pub duration: Option<u32>,
 }
@@ -118,22 +117,16 @@ impl AsepriteData {
 }
 
 impl SpriteFrame {
-    pub fn new(image: &RgbaImage) -> Self {
-        let width = image.width();
-        let height = image.height();
-
+    pub fn new(image: RgbaImage) -> Self {
         Self {
-            x: 0,
-            y: 0,
-            width,
-            height,
+            image,
             duration: None,
         }
     }
 }
 
 impl SpriteFrames {
-    pub fn new(json: &String) -> Self {
+    pub fn new(image: &RgbaImage, json: &String) -> Self {
         let aseprite_data = AsepriteData::new(json);
 
         // 按每一帧的顺序排序
@@ -143,10 +136,13 @@ impl SpriteFrames {
         let sprite_frames = frames
             .iter()
             .map(|(_, frame_data)| SpriteFrame {
-                x: frame_data.frame.x,
-                y: frame_data.frame.y,
-                width: frame_data.frame.w,
-                height: frame_data.frame.h,
+                image: crop_image(
+                    image,
+                    frame_data.frame.x,
+                    frame_data.frame.y,
+                    frame_data.frame.w,
+                    frame_data.frame.h,
+                ),
                 duration: Some(frame_data.duration),
             })
             .collect::<Vec<SpriteFrame>>();
