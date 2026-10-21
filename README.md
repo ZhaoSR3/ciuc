@@ -1,7 +1,7 @@
 # ciuc
 A simple tool for creating images using characters.
 ## Architecture
-Written in the Rust language.Built using [ratatui](https://github.com/ratatui/ratatui) and [ratzilla](https://github.com/ratatui/ratzilla).
+Written in the Rust language.Built using [ratatui](https://github.com/ratatui/ratatui)
 ## Use
 - You can clone the entire project and then run: "cargo build --release"
 - Then you can execute the command "./target/release/ciuc" to run the program! (On Windows, use ".\target\release\ciuc.exe")
